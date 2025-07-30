@@ -1,157 +1,60 @@
-Blood Cell Detection & Classification with YOLOv10
-Project Objective:
-Automatically detect and count RBCs, WBCs, and Platelets in microscopy images using YOLOv10 object detection.
+# 🧬 Blood Cell Detection Using YOLOv10
 
-Table of Contents
-Project Overview
+AI-powered, image-based blood cell detection system using the latest YOLOv10 object detection algorithm  
+Built with Python, Ultralytics YOLOv10, Roboflow, OpenCV, and Gradio
 
-System Requirements
+---
 
-Setup Instructions
+## 🚀 Project Overview
 
-Dataset
+This project applies real-time object detection to microscopic blood smear images to identify and count **Red Blood Cells (RBCs)**, **White Blood Cells (WBCs)**, and **Platelets**.  
+It utilizes the newly released **YOLOv10** architecture for enhanced accuracy and speed. The model was trained using a custom-labeled dataset prepared via Roboflow and deployed with an interactive **Gradio web interface** for live predictions.
 
-Model Training & Validation
+---
 
-Results & Metrics
+## ✨ Features
 
-Inference & Visualization
+- **Advanced Object Detection:** Powered by YOLOv10 for efficient and accurate cell detection  
+- **Custom Dataset:** Trained on a labeled dataset with RBC, WBC, and Platelet annotations  
+- **Gradio Web Interface:** Upload images and get annotated results with detection counts  
+- **Small Object Friendly:** Designed to accurately detect small, overlapping cells  
+- **Class-wise Count Display:** Uses Python `Counter` to display detected class frequencies  
+- **Visualization Support:** Outputs saved and visualized using Matplotlib  
 
-Gradio App Deployment
+---
 
-Directory Structure
+## 🧑💻 Technology Stack
 
-Citation
+- **Python 3**
+- **Ultralytics YOLOv10** – Model training and inference
+- **OpenCV** – Image conversion and preprocessing
+- **Gradio** – Web-based user interface for interactive prediction
+- **Matplotlib** – Displaying output images
+- **Roboflow** – Dataset annotation and export in YOLO format
+- **NumPy & Collections** – For image processing and detection counting
 
-License
+---
 
-Contact
 
-Project Overview
-This repository contains code, scripts, and deployment tools for segmenting and classifying blood cells in high-res images. The project uses:
+---
 
-YOLOv10n (nano): Lightweight, high-performance detector.
+## 🗂️ Dataset Information
 
-Ultralytics YOLO & Gradio: For training, evaluation, and web app deployment.
+- **Source:** [Roboflow Blood Cell Detection Dataset](https://universe.roboflow.com)  
+- **Classes:** RBC, WBC, Platelets  
+- **Images:** Microscopic blood smear images with bounding box annotations  
+- **Annotations Format:** YOLO-compatible `.txt` files with class indices and coordinates  
+- **Preprocessing:** Performed resizing, augmentation (e.g., exposure, flip) in Roboflow  
 
-Roboflow: Dataset management & augmentation.
+---
 
-System Requirements
-Python 3.8+
+## ⚙️ How to Run the Project
 
-CUDA-enabled GPU (recommended)
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/blood-cell-detection-yolov10.git
+   cd blood-cell-detection-yolov10
 
-pip
+---
 
-Packages: torch, ultralytics, opencv-python, matplotlib, roboflow, gradio, and those listed in requirements.txt
 
-Setup Instructions
-bash
-git clone https://github.com/yourusername/blood-cell-detection-yolov10.git
-cd blood-cell-detection-yolov10
-pip install -r requirements.txt
-Customize paths in notebooks/scripts as needed.
-
-Dataset
-Source: Roboflow project: blood-cell-detection-bsbvn (v3)
-
-Classes: RBC, WBC, Platelets
-
-Format: .jpg images, YOLO-format labels
-
-python
-from roboflow import Roboflow
-rf = Roboflow('<your-roboflow-api-key>')
-project = rf.workspace("clg-vtj9f").project("blood-cell-detection-bsbvn")
-dataset = project.version(3).download("yolov8")
-Replace <your-roboflow-api-key> with your personal token.
-
-Model Training & Validation
-bash
-yolo task=detect mode=train epochs=25 batch=32 plots=True \
-  model=<path_to_yolov10n.pt> \
-  data=<path_to_data.yaml>
-# For validation
-yolo task=detect mode=val model=<path_to_trained_model.pt> \
-  data=<path_to_data.yaml>
-Results & Metrics
-Class	Precision	Recall	mAP50	mAP50-95
-RBC	0.825	0.828	0.887	0.624
-WBC	0.929	0.968	0.972	0.625
-Platelets	0.684	0.751	0.734	0.380
-All	0.812	0.849	0.864	0.543
-Inference: ~6ms/image
-
-Predictions: /runs/detect/
-
-Inference & Visualization
-python
-from ultralytics import YOLO
-model = YOLO(<path_to_best_weights.pt>)
-model(source=<path_to_images>, conf=0.25, save=True)
-
-import glob
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-images = glob.glob('<predict_folder_path>/*.jpg')[:10]
-fig, axes = plt.subplots(2, 5, figsize=(20, 10))
-for i, ax in enumerate(axes.flat):
-    if i < len(images):
-        ax.imshow(mpimg.imread(images[i]))
-        ax.axis('off')
-    else:
-        ax.axis('off')
-plt.tight_layout()
-plt.show()
-Gradio App Deployment
-python
-import gradio as gr
-import cv2
-import numpy as np
-from collections import Counter
-
-def predict(image):
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    result = model.predict(source=image_rgb, imgsz=640, conf=0.25)
-    annotated_img = result[0].plot()
-    detections = result[0].boxes.data
-    class_names = [model.names[int(cls)] for cls in detections[:,5]]
-    count = Counter(class_names)
-    detection_str = ', '.join([f"{name}:{count}" for name, count in count.items()])
-    annotated_img = annotated_img[:, :, ::-1]
-    return annotated_img, detection_str
-
-app = gr.Interface(
-    predict,
-    inputs=gr.Image(type="numpy", label="Upload an Image"),
-    outputs=[gr.Image(type="numpy", label="Annotated Image"), gr.Textbox(label="Detection Counts")],
-    title="Blood Cell Detection Using YOLOV10",
-    description="Upload an image and YOLOv10 will detect blood cells."
-)
-app.launch()
-Directory Structure
-text
-blood-cell-detection-yolov10/
-├── notebooks/
-│   └── Hematology_Analysis.ipynb
-├── src/
-├── data/
-│   └── (README or scripts; dataset not included)
-├── app/
-│   └── gradio_app.py
-├── runs/
-│   └── detect/
-├── requirements.txt
-├── README.md
-└── .gitignore
-Citation
-YOLOv10: THU-MIG/yolov10 on GitHub
-
-Roboflow platform
-
-License
-Distributed under the MIT License. See LICENSE for details.
-
-Contact
-Feel free to contact me anytime if you have questions, feedback, or want to collaborate!
-Ping me here, open an issue, or reach out via my profile. Glad to help
